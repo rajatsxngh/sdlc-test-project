@@ -2,7 +2,7 @@
 
 from fastapi import FastAPI, HTTPException
 
-from taskflow.models import Task, TaskCreate
+from taskflow.models import Task, TaskCreate, TaskUpdate
 from taskflow.storage import storage
 
 app = FastAPI(title="TaskFlow", version="0.1.0")
@@ -31,8 +31,18 @@ def get_task(task_id: int) -> Task:
     return task
 
 
-# TODO: PUT /tasks/{task_id} - update a task
-# TODO: DELETE /tasks/{task_id} - delete a task
+@app.put("/tasks/{task_id}", response_model=Task)
+def update_task(task_id: int, data: TaskUpdate) -> Task:
+    task = storage.update_task(task_id, data)
+    if task is None:
+        raise HTTPException(status_code=404, detail="Task not found")
+    return task
+
+
+@app.delete("/tasks/{task_id}", status_code=204)
+def delete_task(task_id: int) -> None:
+    if not storage.delete_task(task_id):
+        raise HTTPException(status_code=404, detail="Task not found")
 # TODO: GET /tasks?status=todo&priority=high - filter tasks
 # TODO: GET /tasks/search?q=keyword - search tasks
 # TODO: GET /tasks/stats - task statistics
