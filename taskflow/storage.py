@@ -1,6 +1,6 @@
 """In-memory task storage."""
 
-from taskflow.models import Task, TaskCreate
+from taskflow.models import Task, TaskCreate, TaskUpdate
 
 
 class TaskStorage:
@@ -25,8 +25,22 @@ class TaskStorage:
         """Return a single task by id, or None if not found."""
         return self._tasks.get(task_id)
 
-    # TODO: def update_task(self, task_id: int, data: TaskUpdate) -> Task | None:
-    # TODO: def delete_task(self, task_id: int) -> bool:
+    def update_task(self, task_id: int, data: TaskUpdate) -> Task | None:
+        """Update a task by id. Return updated task or None if not found."""
+        task = self._tasks.get(task_id)
+        if task is None:
+            return None
+        updates = data.model_dump(exclude_unset=True)
+        updated = task.model_copy(update=updates)
+        self._tasks[task_id] = updated
+        return updated
+
+    def delete_task(self, task_id: int) -> bool:
+        """Delete a task by id. Return True if deleted, False if not found."""
+        if task_id not in self._tasks:
+            return False
+        del self._tasks[task_id]
+        return True
     # TODO: def search_tasks(self, query: str) -> list[Task]:
     # TODO: def get_stats(self) -> dict:
     # TODO: def export_csv(self) -> str:

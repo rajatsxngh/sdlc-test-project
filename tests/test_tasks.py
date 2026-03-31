@@ -61,3 +61,48 @@ def test_get_task_not_found():
     resp = client.get("/tasks/999")
     assert resp.status_code == 404
     assert resp.json()["detail"] == "Task not found"
+
+
+def test_update_task_all_fields():
+    client.post("/tasks", json={"title": "Original"})
+    resp = client.put("/tasks/1", json={
+        "title": "Updated",
+        "description": "New desc",
+        "priority": "critical",
+        "status": "done",
+    })
+    assert resp.status_code == 200
+    data = resp.json()
+    assert data["title"] == "Updated"
+    assert data["description"] == "New desc"
+    assert data["priority"] == "critical"
+    assert data["status"] == "done"
+
+
+def test_update_task_partial():
+    client.post("/tasks", json={"title": "Original", "priority": "low"})
+    resp = client.put("/tasks/1", json={"priority": "high"})
+    assert resp.status_code == 200
+    data = resp.json()
+    assert data["title"] == "Original"
+    assert data["priority"] == "high"
+
+
+def test_update_task_not_found():
+    resp = client.put("/tasks/999", json={"title": "Nope"})
+    assert resp.status_code == 404
+    assert resp.json()["detail"] == "Task not found"
+
+
+def test_delete_task():
+    client.post("/tasks", json={"title": "To delete"})
+    resp = client.delete("/tasks/1")
+    assert resp.status_code == 204
+    resp = client.get("/tasks/1")
+    assert resp.status_code == 404
+
+
+def test_delete_task_not_found():
+    resp = client.delete("/tasks/999")
+    assert resp.status_code == 404
+    assert resp.json()["detail"] == "Task not found"

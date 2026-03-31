@@ -28,6 +28,13 @@ class TaskCreate(BaseModel):
     # TODO: tags: list[str] = []
 
 
+class TaskUpdate(BaseModel):
+    title: str | None = Field(None, min_length=1, max_length=200)
+    description: str | None = None
+    priority: Priority | None = None
+    status: TaskStatus | None = None
+
+
 class Task(BaseModel):
     id: int
     title: str
